@@ -1,6 +1,10 @@
 package com.example.playmusicservice;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +21,24 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
     private Button btnPause;
 
     private PlayMusicPresenter mPlayMusicPresenter;
+
+    private PlayMusicService playMusicService;
+    private boolean isServiceConnected; // mac dinh dang false
+
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlayMusicService.PlayMusicBinder playMusicBinder = (PlayMusicService.PlayMusicBinder) service;
+            playMusicService = playMusicBinder.getPlayMusicService();
+            isServiceConnected = true ;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            playMusicService = null;
+            isServiceConnected = false ;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +86,18 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
     public void playSuccess() {
         Intent myIntent = new Intent(MainActivity.this, PlayMusicService.class);
         this.startService(myIntent);
+
+        bindService(myIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void pauseSuccess() {
         Intent myIntent = new Intent(MainActivity.this, PlayMusicService.class);
         this.stopService(myIntent);
+
+        if (isServiceConnected){
+            unbindService(mServiceConnection);
+            isServiceConnected = false;
+        }
     }
 }
