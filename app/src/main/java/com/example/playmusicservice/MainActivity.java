@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.playmusicservice.contract.PlayMusicInterface;
 import com.example.playmusicservice.model.Song;
@@ -19,6 +20,8 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
 
     private Button btnPlay;
     private Button btnPause;
+
+    private TextView tvNameSong;
 
     private PlayMusicPresenter mPlayMusicPresenter;
 
@@ -31,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
             PlayMusicService.PlayMusicBinder playMusicBinder = (PlayMusicService.PlayMusicBinder) service;
             playMusicService = playMusicBinder.getPlayMusicService();
             isServiceConnected = true ;
+
+            handleMusic ();
         }
 
         @Override
@@ -54,6 +59,15 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
             @Override
             public void onClick(View v) {
                 playMusic();
+
+                if (playMusicService!= null) {
+                    if (playMusicService.isPlaying()) {
+                        playMusicService.pause2Music();
+                    } else {
+                        playMusicService.resumeMusic();
+                    }
+                    setStatusPlayorPause();
+                }
             }
         });
         btnPause.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
     public void playMusic() {
 //        Intent myIntent = new Intent(MainActivity.this, PlayMusicService.class);
 //        this.startService(myIntent);
-        String name = "";
+        String name = "mua tren pho hue";
         String time = "";
         Song song = new Song (name , time);
         mPlayMusicPresenter.playMusic(song);
@@ -98,6 +112,23 @@ public class MainActivity extends AppCompatActivity implements PlayMusicInterfac
         if (isServiceConnected){
             unbindService(mServiceConnection);
             isServiceConnected = false;
+        }
+    }
+
+    private void handleMusic() {
+        tvNameSong = findViewById(R.id.tv_songname);
+//        tvNameSong.setText(playMusicService.getSong().getName());
+        setStatusPlayorPause();
+    }
+
+    private void setStatusPlayorPause (){
+        if (playMusicService==null){
+            return;
+        }
+        if (playMusicService.isPlaying()){
+            btnPlay.setText("Pause");
+        } else {
+            btnPlay.setText("Play");
         }
     }
 }

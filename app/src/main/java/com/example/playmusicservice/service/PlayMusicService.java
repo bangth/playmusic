@@ -10,11 +10,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.example.playmusicservice.R;
+import com.example.playmusicservice.model.Song;
 
 import static com.example.playmusicservice.service.NotificationApplication.CHANNEL_ID;
 
 public class PlayMusicService extends Service {
     private MediaPlayer mediaPlayer;
+    private boolean isPlaying;
+    private Song song;
 
     public PlayMusicService() {
     }
@@ -52,6 +55,19 @@ public class PlayMusicService extends Service {
         return START_STICKY;
     }
 
+    public void pause2Music (){
+        if (mediaPlayer !=null && isPlaying) {
+            mediaPlayer.pause();
+            isPlaying=false;
+        }
+    }
+    public void resumeMusic (){
+        if (mediaPlayer !=null && !isPlaying) {
+            mediaPlayer.start();
+            isPlaying=true;
+        }
+    }
+
     private void sendNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
         builder.setContentTitle(getString(R.string.app_name));
@@ -71,7 +87,21 @@ public class PlayMusicService extends Service {
     @Override
     public void onDestroy() {
         Log.e("bangth5", "playmussic service OnDestroy");
-        mediaPlayer.release();
+        if (mediaPlayer!=null){
+            mediaPlayer.release();
+            mediaPlayer= null;
+        }
+
+        //mediaPlayer.release();
+
         super.onDestroy();
+    }
+
+    public Song getSong() {
+        return song;
+    }
+
+    public boolean isPlaying() {
+        return isPlaying;
     }
 }
